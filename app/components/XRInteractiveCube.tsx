@@ -14,7 +14,8 @@ export function XRInteractiveCube() {
   
   // XR hook to access the current XR session
   // This tells us if we're currently in AR or VR mode
-  const { isPresenting } = useXR();
+  const session = useXR((state) => state.session);
+  const isPresenting = session !== null;
   
   // Function to toggle the cube's color
   const toggleColor = () => {

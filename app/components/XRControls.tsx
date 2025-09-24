@@ -157,7 +157,7 @@ export function XRControls() {
       <button
         onClick={() => {
           try {
-            xrStore.exitXR();   // Call the XR store's exitXR method
+            xrStore.getState().session?.end();   // Call the XR store's session end method
           } catch (error) {
             console.error('Error exiting XR:', error);
             // Exit XR might fail if not in an XR session, which is okay
