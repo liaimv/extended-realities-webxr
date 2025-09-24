@@ -12,7 +12,12 @@ export function Cube(props: React.ComponentProps<'mesh'>) {
     // mesh is the fundamental 3D object in Three.js
     // It combines geometry (shape) with material (appearance)
     // {...props} spreads any props passed to this component onto the mesh
-    <mesh {...props}>
+    <mesh 
+      {...props}
+      // XR INTERACTION PROPERTIES
+      // These properties enable interaction in AR/VR environments
+      pointerEventsType={{ deny: 'grab' }}  // Allow clicking/touching but prevent grabbing
+    >
       
       {/* 
         boxGeometry defines the shape of our cube

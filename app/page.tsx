@@ -5,20 +5,93 @@
 // Import required components
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid } from '@react-three/drei';
+import { XR } from '@react-three/xr';
 import { Model as PottedPlant } from './components/PottedPlant';
 import { Cube } from './components/Cube';
+import { xrStore } from './store/xrStore';
 
 // Main homepage component that renders our 3D scene
 export default function Home() {
   return (
     // Container div that takes up the full viewport (100% width and height)
     <div style={{ width: '100vw', height: '100vh' }}>
+      
+      {/* 
+        XR CONTROL BUTTONS
+        These buttons allow users to enter AR (Augmented Reality) or VR (Virtual Reality) modes
+        AR overlays 3D objects on the real world through the camera
+        VR creates an immersive virtual environment
+      */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '20px', 
+        left: '20px', 
+        zIndex: 1000,
+        display: 'flex',
+        gap: '10px'
+      }}>
+        <button 
+          onClick={() => xrStore.enterAR()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}
+        >
+          Enter AR
+        </button>
+        
+        <button 
+          onClick={() => xrStore.enterVR()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#2196F3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}
+        >
+          Enter VR
+        </button>
+        
+        <button 
+          onClick={() => xrStore.getState().session?.end()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#f44336',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}
+        >
+          Exit XR
+        </button>
+      </div>
       {/* 
         Canvas is the main React Three Fiber component that creates a 3D scene
         It sets up WebGL context and handles rendering
         camera prop sets the initial camera position [x, y, z]
       */}
       <Canvas camera={{ position: [5, 5, 5] }}>
+        
+        {/* 
+          XR COMPONENT WRAPPER
+          The XR component enables Extended Reality (AR/VR) functionality
+          It must wrap all 3D content that should be available in XR mode
+          The store prop connects our XR store to manage XR state
+        */}
+        <XR store={xrStore}>
         
         {/* 
           LIGHTING SETUP
@@ -93,6 +166,9 @@ export default function Home() {
           enableZoom={true}     // Allow zooming in/out
           enableRotate={true}   // Allow rotating around the scene
         />
+        
+        {/* Close the XR component wrapper */}
+        </XR>
       </Canvas>
     </div>
   );

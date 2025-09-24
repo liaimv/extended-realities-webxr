@@ -52,6 +52,10 @@ export function Model(props: React.ComponentProps<'group'>) {
         // Scale up the model (original might be very small)
         scale={100}
         
+        // XR INTERACTION PROPERTIES
+        // These properties enable interaction in AR/VR environments
+        pointerEventsType={{ deny: 'grab' }}  // Allow clicking/touching but prevent grabbing
+        
         // INTERACTION EVENTS
         // onClick: When user clicks the plant, trigger position randomization
         onClick={randomizePosition}
