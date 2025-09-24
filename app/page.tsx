@@ -17,51 +17,16 @@ export default function Home() {
     <div style={{ width: '100vw', height: '100vh' }}>
       
       {/* 
-        XR CONTROL BUTTONS
-        These buttons allow users to enter AR (Augmented Reality) or VR (Virtual Reality) modes
-        AR overlays 3D objects on the real world through the camera
-        VR creates an immersive virtual environment
+        EXIT XR BUTTON
+        This button allows users to exit XR mode when they are in an AR or VR session
+        It's positioned in the top-right corner for easy access
       */}
       <div style={{ 
         position: 'absolute', 
         top: '20px', 
-        left: '20px', 
-        zIndex: 1000,
-        display: 'flex',
-        gap: '10px'
+        right: '20px', 
+        zIndex: 1000
       }}>
-        <button 
-          onClick={() => xrStore.enterAR()}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
-        >
-          Enter AR
-        </button>
-        
-        <button 
-          onClick={() => xrStore.enterVR()}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
-        >
-          Enter VR
-        </button>
-        
         <button 
           onClick={() => xrStore.getState().session?.end()}
           style={{
