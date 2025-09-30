@@ -4,7 +4,7 @@
 
 // Import required components
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Grid, Environment, Stars, Sparkles } from '@react-three/drei';
+import { Environment, Stars, Sparkles } from '@react-three/drei';
 import { useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 
@@ -65,7 +65,7 @@ function FirstPersonController() {
   const moveBackward = useRef(false);
   const moveLeft = useRef(false);
   const moveRight = useRef(false);
-  const velocity = useRef(new THREE.Vector3());
+  // const velocity = useRef(new THREE.Vector3()); // Removed unused variable
   const direction = useRef(new THREE.Vector3());
   const [mouseSensitivity] = useState(0.002);
   const [moveSpeed] = useState(5);
@@ -201,11 +201,11 @@ function FirstPersonController() {
   });
 
   // Handle click to enable pointer lock
-  const handleClick = () => {
-    if (!isPointerLocked) {
-      document.body.requestPointerLock();
-    }
-  };
+  // const handleClick = () => {
+  //   if (!isPointerLocked) {
+  //     document.body.requestPointerLock();
+  //   }
+  // }; // Removed unused function
 
   return null;
 }

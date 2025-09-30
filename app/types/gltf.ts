@@ -7,3 +7,11 @@ export type GLTFResult = GLTF & {
   materials: Record<string, THREE.Material>;
   animations: THREE.AnimationClip[];
 };
+
+// Props type for 3D model components
+export interface ModelProps {
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: [number, number, number];
+  [key: string]: unknown; // Allow other props to be passed through
+}
