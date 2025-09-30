@@ -3,12 +3,162 @@
 'use client';
 
 // Import required components
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid } from '@react-three/drei';
-import { XR } from '@react-three/xr';
-import { Model as PottedPlant } from './components/PottedPlant';
-import { Cube } from './components/Cube';
-import { xrStore } from './store/xrStore';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Grid } from '@react-three/drei';
+import { useRef, useState, useEffect } from 'react';
+import * as THREE from 'three';
+
+// First-person controller component that handles mouse look and WASD movement
+function FirstPersonController() {
+  const { camera } = useThree();
+  const moveForward = useRef(false);
+  const moveBackward = useRef(false);
+  const moveLeft = useRef(false);
+  const moveRight = useRef(false);
+  const velocity = useRef(new THREE.Vector3());
+  const direction = useRef(new THREE.Vector3());
+  const [mouseSensitivity] = useState(0.002);
+  const [moveSpeed] = useState(5);
+  const [isPointerLocked, setIsPointerLocked] = useState(false);
+
+  // Handle keyboard input for movement
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.code) {
+        case 'KeyW':
+          moveForward.current = true;
+          break;
+        case 'KeyS':
+          moveBackward.current = true;
+          break;
+        case 'KeyA':
+          moveLeft.current = true;
+          break;
+        case 'KeyD':
+          moveRight.current = true;
+          break;
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      switch (event.code) {
+        case 'KeyW':
+          moveForward.current = false;
+          break;
+        case 'KeyS':
+          moveBackward.current = false;
+          break;
+        case 'KeyA':
+          moveLeft.current = false;
+          break;
+        case 'KeyD':
+          moveRight.current = false;
+          break;
+      }
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isPointerLocked) return;
+      
+      // Mouse look - rotate camera based on mouse movement
+      const deltaX = event.movementX * mouseSensitivity;
+      const deltaY = event.movementY * mouseSensitivity;
+      
+      // Get current rotation as Euler angles
+      const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+      
+      // Apply yaw rotation (horizontal mouse movement around Y axis)
+      euler.y -= deltaX;
+      
+      // Apply pitch rotation (vertical mouse movement around X axis) with limits
+      euler.x -= deltaY;
+      euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+      
+      // Keep roll at 0 (no Z-axis rotation for standard FPS controls)
+      euler.z = 0;
+      
+      // Apply the new rotation
+      camera.quaternion.setFromEuler(euler);
+    };
+
+    const handlePointerLockChange = () => {
+      setIsPointerLocked(document.pointerLockElement === document.body);
+    };
+
+    // Add event listeners
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
+
+    // Cleanup event listeners
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
+    };
+  }, [camera, mouseSensitivity, isPointerLocked]);
+
+  // Update movement every frame
+  useFrame((state, delta) => {
+    if (!isPointerLocked) return;
+
+    // Calculate movement direction based on camera rotation
+    direction.current.set(0, 0, 0);
+    
+    if (moveForward.current) {
+      direction.current.z += 1;
+    }
+    if (moveBackward.current) {
+      direction.current.z -= 1;
+    }
+    if (moveLeft.current) {
+      direction.current.x -= 1;
+    }
+    if (moveRight.current) {
+      direction.current.x += 1;
+    }
+
+    // Normalize direction to prevent faster diagonal movement
+    if (direction.current.length() > 0) {
+      direction.current.normalize();
+    }
+
+    // Apply movement speed and delta time
+    const moveDistance = moveSpeed * delta;
+    
+    // Calculate movement in world space based on camera rotation
+    const forward = new THREE.Vector3(0, 0, -1);
+    const right = new THREE.Vector3(1, 0, 0);
+    
+    forward.applyQuaternion(camera.quaternion);
+    right.applyQuaternion(camera.quaternion);
+    
+    // Don't move vertically (keep Y at 0)
+    forward.y = 0;
+    right.y = 0;
+    forward.normalize();
+    right.normalize();
+    
+    // Calculate final movement vector
+    const moveVector = new THREE.Vector3();
+    moveVector.addScaledVector(forward, direction.current.z * moveDistance);
+    moveVector.addScaledVector(right, direction.current.x * moveDistance);
+    
+    // Apply movement to camera position
+    camera.position.add(moveVector);
+  });
+
+  // Handle click to enable pointer lock
+  const handleClick = () => {
+    if (!isPointerLocked) {
+      document.body.requestPointerLock();
+    }
+  };
+
+  return null;
+}
 
 // Main homepage component that renders our 3D scene
 export default function Home() {
@@ -17,46 +167,42 @@ export default function Home() {
     <div style={{ width: '100vw', height: '100vh' }}>
       
       {/* 
-        EXIT XR BUTTON
-        This button allows users to exit XR mode when they are in an AR or VR session
-        It's positioned in the top-right corner for easy access
+        INSTRUCTIONS OVERLAY
+        This shows users how to control the first-person camera
+        It's positioned in the top-left corner for easy reference
       */}
       <div style={{ 
         position: 'absolute', 
         top: '20px', 
-        right: '20px', 
-        zIndex: 1000
+        left: '20px', 
+        zIndex: 1000,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        color: 'white',
+        padding: '15px',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontFamily: 'Arial, sans-serif'
       }}>
-        <button 
-          onClick={() => xrStore.getState().session?.end()}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#f44336',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
-        >
-          Exit XR
-        </button>
+        <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>First-Person Controls:</div>
+        <div>• Click anywhere to enable mouse look</div>
+        <div>• WASD keys to move</div>
+        <div>• Mouse to look around</div>
+        <div>• ESC to exit mouse lock</div>
       </div>
+      
       {/* 
         Canvas is the main React Three Fiber component that creates a 3D scene
         It sets up WebGL context and handles rendering
-        camera prop sets the initial camera position [x, y, z]
+        camera prop sets the initial camera position [x, y, z] at ground level
       */}
-      <Canvas camera={{ position: [5, 5, 5] }}>
-        
-        {/* 
-          XR COMPONENT WRAPPER
-          The XR component enables Extended Reality (AR/VR) functionality
-          It must wrap all 3D content that should be available in XR mode
-          The store prop connects our XR store to manage XR state
-        */}
-        <XR store={xrStore}>
+      <Canvas 
+        camera={{ position: [0, 1.6, 0] }}
+        onClick={() => {
+          if (!document.pointerLockElement) {
+            document.body.requestPointerLock();
+          }
+        }}
+      >
         
         {/* 
           LIGHTING SETUP
@@ -90,20 +236,22 @@ export default function Home() {
         />
         
         {/* 
-          3D OBJECTS
-          These are our interactive 3D elements in the scene
+          FIRST-PERSON CONTROLLER
+          This component handles mouse look and WASD movement
+          It must be inside the Canvas to access the camera
         */}
-        
-        {/* Static orange cube positioned at the origin (0, 0, 0) */}
-        <Cube />
-        
-        {/* Interactive potted plant that can be clicked to teleport */}
-        <PottedPlant scale={10} />
+        <FirstPersonController />
         
         {/* 
           SCENE HELPERS
           Visual aids that help users understand the 3D space
         */}
+        
+        {/* White ground plane provides a solid surface to walk on */}
+        <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[50, 50]} />
+          <meshLambertMaterial color="white" />
+        </mesh>
         
         {/* Grid floor provides spatial reference and depth perception */}
         <Grid 
@@ -119,21 +267,6 @@ export default function Home() {
           fadeStrength={1}          // How quickly the fade happens
         />
         
-        {/* 
-          CAMERA CONTROLS
-          OrbitControls allows users to navigate around the 3D scene
-          - Left click + drag: Rotate camera around the scene
-          - Right click + drag: Pan the camera
-          - Scroll wheel: Zoom in and out
-        */}
-        <OrbitControls 
-          enablePan={true}      // Allow panning (moving the camera)
-          enableZoom={true}     // Allow zooming in/out
-          enableRotate={true}   // Allow rotating around the scene
-        />
-        
-        {/* Close the XR component wrapper */}
-        </XR>
       </Canvas>
     </div>
   );
