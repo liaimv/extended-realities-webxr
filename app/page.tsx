@@ -10,8 +10,6 @@ import * as THREE from 'three';
 
 // Import our custom 3D model components
 import GingerBreadHouse from './components/GingerBreadHouse';
-import Gift from './components/Gift';
-import ChristmasTree from './components/ChristmasTree';
 import GingerBreadWagon from './components/GingerBreadWagon';
 import RandomSpawner from './components/RandomSpawner';
 
@@ -396,17 +394,6 @@ export default function Home() {
           scale={[50, 50, 50]}         // Normal size
         />
         
-        {/* Gift box positioned inside the ginger bread house */}
-        <Gift 
-          position={[2, 0, 1]}      // Inside the house, slightly to the right and forward
-          scale={[0.5, 0.5, 0.5]}   // Smaller scale to fit inside
-        />
-        
-        {/* Christmas Tree positioned inside the ginger bread house */}
-        <ChristmasTree 
-          position={[-2, 0, -1]}    // Inside the house, to the left and back
-          scale={[0.8, 0.8, 0.8]}   // Slightly larger than gift but still fits inside
-        />
         
         {/* 
           ADDITIONAL FESTIVE MODELS
