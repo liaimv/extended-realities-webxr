@@ -4,7 +4,7 @@
 
 // Import required components
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Grid, Environment } from '@react-three/drei';
+import { Grid, Environment, Stars, Sparkles } from '@react-three/drei';
 import { useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 
@@ -14,6 +14,51 @@ import Gift from './components/Gift';
 import ChristmasTree from './components/ChristmasTree';
 import GingerBreadWagon from './components/GingerBreadWagon';
 import RandomSpawner from './components/RandomSpawner';
+
+// Dreamy particle system component for magical atmosphere
+function DreamyParticles() {
+  const meshRef = useRef<THREE.Points>(null);
+  
+  // Create floating particles that gently move up and down
+  useFrame((state) => {
+    if (meshRef.current) {
+      // Gentle floating motion
+      meshRef.current.rotation.y += 0.001;
+      meshRef.current.rotation.x += 0.0005;
+      
+      // Move particles up and down in a wave pattern
+      const time = state.clock.getElapsedTime();
+      meshRef.current.position.y = Math.sin(time * 0.5) * 2;
+    }
+  });
+
+  return (
+    <points ref={meshRef}>
+      {/* Create 5000 random particles for an incredibly magical atmosphere */}
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={5000}
+          array={new Float32Array(
+            Array.from({ length: 5000 * 3 }, () => (Math.random() - 0.5) * 100)
+          )}
+          itemSize={3}
+          args={[new Float32Array(
+            Array.from({ length: 5000 * 3 }, () => (Math.random() - 0.5) * 100)
+          ), 3]}
+        />
+      </bufferGeometry>
+      {/* Soft, glowing material for dreamy effect */}
+      <pointsMaterial 
+        color="#ffb3e6" 
+        size={0.2} 
+        transparent 
+        opacity={0.3}
+        sizeAttenuation={true}
+      />
+    </points>
+  );
+}
 
 // First-person controller component that handles mouse look and WASD movement
 function FirstPersonController() {
@@ -212,34 +257,76 @@ export default function Home() {
       >
         
         {/* 
-          LIGHTING SETUP
-          We use multiple light sources to create depth and visual interest
+          DREAMY LIGHTING SETUP
+          Soft, pastel lighting that creates a dreamlike atmosphere
         */}
         
-        {/* Ambient light provides soft, overall illumination without direction */}
-        <ambientLight intensity={0.4} />
+        {/* Soft ambient light with a dreamy pink tint */}
+        <ambientLight intensity={0.6} color="#ffb3e6" />
         
-        {/* Directional light simulates sunlight - comes from one direction */}
+        {/* Gentle directional light with warm, soft color */}
         <directionalLight 
           position={[10, 10, 5]}  // Position in 3D space [x, y, z]
-          intensity={1.0}         // How bright the light is
+          intensity={0.8}         // Softer than before
+          color="#fff0f5"         // Soft pink-white light
           castShadow              // Enable this light to cast shadows
         />
         
-        {/* Point light radiates in all directions from a single point */}
+        {/* Dreamy point light with purple tint */}
         <pointLight 
           position={[-10, -10, -5]}  // Positioned opposite to main light
-          intensity={0.5}            // Dimmer than main light
-          color="#ffffff"            // Pure white light
+          intensity={0.4}            // Gentle intensity
+          color="#e6b3ff"            // Soft purple light
         />
         
-        {/* Spot light creates a cone of light, like a flashlight */}
+        {/* Magical spot light with golden glow */}
         <spotLight
           position={[0, 10, 0]}  // Directly above the scene
-          angle={0.3}            // Width of the light cone
-          penumbra={1}           // Softness of light edges (0 = sharp, 1 = very soft)
-          intensity={0.3}        // Gentle fill light
+          angle={0.4}            // Wider light cone for softer effect
+          penumbra={1}           // Very soft edges
+          intensity={0.4}        // Gentle magical light
+          color="#fff8dc"        // Creamy golden light
           castShadow             // Enable shadow casting
+        />
+        
+        {/* Additional dreamy lights for magical atmosphere */}
+        <pointLight 
+          position={[5, 5, 5]}   // Top-right corner
+          intensity={0.3}        // Subtle
+          color="#b3d9ff"        // Soft blue light
+        />
+        
+        <pointLight 
+          position={[-5, 5, -5]} // Top-left corner
+          intensity={0.3}        // Subtle
+          color="#b3ffb3"        // Soft green light
+        />
+        
+        {/* 
+          DREAMY ATMOSPHERIC EFFECTS
+          These create the dreamlike atmosphere with fog, stars, and sparkles
+        */}
+        
+        {/* Atmospheric fog for depth and dreaminess */}
+        <fog attach="fog" args={["#ffb3e6", 10, 100]} />
+        
+        {/* Twinkling stars in the background */}
+        <Stars 
+          radius={100}           // How far the stars extend
+          depth={50}            // Depth of the star field
+          count={5000}          // Number of stars
+          factor={4}            // Size of stars
+          saturation={0}        // No color saturation for pure white stars
+          fade={true}           // Stars fade with distance
+        />
+        
+        {/* Magical sparkles floating around the scene */}
+        <Sparkles 
+          count={100}           // Number of sparkles
+          scale={10}            // Size of sparkles
+          size={2}              // Individual sparkle size
+          speed={0.4}           // How fast they twinkle
+          color="#ffb3e6"       // Pink sparkles
         />
         
         {/* 
@@ -250,7 +337,7 @@ export default function Home() {
         <Environment 
           files="/Puresky.hdr"    // Path to the HDR skybox file
           background={true}       // Use the HDR as the background
-          environmentIntensity={0.5}  // How bright the environment lighting is
+          environmentIntensity={0.3}  // Dimmer for dreamy effect
         />
         
         {/* 
@@ -261,28 +348,41 @@ export default function Home() {
         <FirstPersonController />
         
         {/* 
-          SCENE HELPERS
-          Visual aids that help users understand the 3D space
+          DREAMY SCENE ELEMENTS
+          Soft, magical ground and atmospheric effects
         */}
         
-        {/* White ground plane provides a solid surface to walk on */}
+        {/* Dreamy ground plane with soft pastel color - solid, not transparent */}
         <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[100, 100]} />
-          <meshLambertMaterial color="white" />
+          <meshStandardMaterial 
+            color="#fff0f5"         // Soft pink-white ground
+            side={THREE.DoubleSide}  // Make sure both sides are visible
+            transparent={false}      // Explicitly set to not transparent
+            opacity={1.0}           // Full opacity
+          />
         </mesh>
         
-        {/* Grid floor provides spatial reference and depth perception */}
-        <Grid 
-          args={[50, 50]}           // Grid dimensions: 50x50 units
-          position={[0, -1, 0]}     // Positioned 1 unit below origin
-          cellSize={1}              // Each cell is 1x1 unit
-          cellThickness={0.5}       // Thin lines for individual cells
-          cellColor="#6f6f6f"       // Gray color for cell lines
-          sectionSize={5}           // Major grid lines every 5 cells
-          sectionThickness={1}      // Thicker lines for major sections
-          sectionColor="#9d4b4b"    // Reddish color for section lines
-          fadeDistance={50}         // Grid fades out at this distance
-          fadeStrength={1}          // How quickly the fade happens
+        {/* Dreamy floating particles */}
+        <DreamyParticles />
+        
+        {/* Additional magical sparkles at different heights */}
+        <Sparkles 
+          count={50}            // Fewer sparkles for variety
+          scale={15}           // Larger scale
+          size={3}              // Bigger individual sparkles
+          speed={0.2}           // Slower movement
+          color="#e6b3ff"       // Purple sparkles
+          position={[0, 5, 0]}  // Higher up
+        />
+        
+        <Sparkles 
+          count={30}            // Even fewer sparkles
+          scale={20}           // Even larger scale
+          size={4}              // Even bigger sparkles
+          speed={0.1}           // Very slow movement
+          color="#b3d9ff"       // Blue sparkles
+          position={[0, 10, 0]} // Much higher up
         />
         
         {/* 
