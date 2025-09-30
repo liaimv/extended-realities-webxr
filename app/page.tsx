@@ -4,9 +4,16 @@
 
 // Import required components
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Grid } from '@react-three/drei';
+import { Grid, Environment } from '@react-three/drei';
 import { useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
+
+// Import our custom 3D model components
+import GingerBreadHouse from './components/GingerBreadHouse';
+import Gift from './components/Gift';
+import ChristmasTree from './components/ChristmasTree';
+import GingerBreadWagon from './components/GingerBreadWagon';
+import RandomSpawner from './components/RandomSpawner';
 
 // First-person controller component that handles mouse look and WASD movement
 function FirstPersonController() {
@@ -196,7 +203,7 @@ export default function Home() {
         camera prop sets the initial camera position [x, y, z] at ground level
       */}
       <Canvas 
-        camera={{ position: [0, 1.6, 0] }}
+        camera={{ position: [0, 2, 15] }}
         onClick={() => {
           if (!document.pointerLockElement) {
             document.body.requestPointerLock();
@@ -236,6 +243,17 @@ export default function Home() {
         />
         
         {/* 
+          SKYBOX ENVIRONMENT
+          This creates a beautiful sky environment using the HDR file
+          The Environment component automatically creates a skybox that surrounds the entire scene
+        */}
+        <Environment 
+          files="/Puresky.hdr"    // Path to the HDR skybox file
+          background={true}       // Use the HDR as the background
+          environmentIntensity={0.5}  // How bright the environment lighting is
+        />
+        
+        {/* 
           FIRST-PERSON CONTROLLER
           This component handles mouse look and WASD movement
           It must be inside the Canvas to access the camera
@@ -249,13 +267,13 @@ export default function Home() {
         
         {/* White ground plane provides a solid surface to walk on */}
         <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[50, 50]} />
+          <planeGeometry args={[100, 100]} />
           <meshLambertMaterial color="white" />
         </mesh>
         
         {/* Grid floor provides spatial reference and depth perception */}
         <Grid 
-          args={[20, 20]}           // Grid dimensions: 20x20 units
+          args={[50, 50]}           // Grid dimensions: 50x50 units
           position={[0, -1, 0]}     // Positioned 1 unit below origin
           cellSize={1}              // Each cell is 1x1 unit
           cellThickness={0.5}       // Thin lines for individual cells
@@ -263,9 +281,51 @@ export default function Home() {
           sectionSize={5}           // Major grid lines every 5 cells
           sectionThickness={1}      // Thicker lines for major sections
           sectionColor="#9d4b4b"    // Reddish color for section lines
-          fadeDistance={25}         // Grid fades out at this distance
+          fadeDistance={50}         // Grid fades out at this distance
           fadeStrength={1}          // How quickly the fade happens
         />
+        
+        {/* 
+          3D MODELS SECTION
+          Here we add our custom 3D models to the scene
+        */}
+        
+        {/* Ginger Bread House - the main structure */}
+        <GingerBreadHouse 
+          position={[0, 6, 0]}   // Center of the scene
+          scale={[50, 50, 50]}         // Normal size
+        />
+        
+        {/* Gift box positioned inside the ginger bread house */}
+        <Gift 
+          position={[2, 0, 1]}      // Inside the house, slightly to the right and forward
+          scale={[0.5, 0.5, 0.5]}   // Smaller scale to fit inside
+        />
+        
+        {/* Christmas Tree positioned inside the ginger bread house */}
+        <ChristmasTree 
+          position={[-2, 0, -1]}    // Inside the house, to the left and back
+          scale={[0.8, 0.8, 0.8]}   // Slightly larger than gift but still fits inside
+        />
+        
+        {/* 
+          ADDITIONAL FESTIVE MODELS
+          These models are positioned around the ginger bread house to create a festive scene
+        */}
+        
+        {/* Ginger Bread Wagon - positioned to the right of the house */}
+        <GingerBreadWagon 
+          position={[10, -1, 5]}   // To the right and forward of the house
+          rotation={[-Math.PI / 2, 0, Math.PI / 4]}  // Rotate 90 degrees around Y-axis to face forward
+          scale={[15, 15, 15]}         // Slightly larger scale for visibility
+        />
+        
+        {/* 
+          RANDOM SPAWNER
+          This component randomly spawns 10 of each candy model throughout the scene
+          without overlapping with existing models
+        */}
+        <RandomSpawner />
         
       </Canvas>
     </div>
